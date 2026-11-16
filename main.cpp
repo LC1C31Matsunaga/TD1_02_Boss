@@ -9,43 +9,20 @@
 #include "world.h"
 #pragma endregion
 
-///=========================
-/// 定数宣言
-///=========================
 // タイトル
 const char kWindowTitle[] = "1249_ゲームタイトル";
-
-///=========================
-/// 構造体宣言
-///=========================
-
-
-
-///=========================
-/// 関数宣言
-///=========================
-
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 	// ライブラリの初期化
-	Novice::Initialize(kWindowTitle, 1920, 1080);
+	Novice::Initialize(kWindowTitle, kWindowWidth, kWindowHeight);
 
 	// キー入力結果を受け取る箱
 	char keys[256] = {0};
 	char preKeys[256] = {0};
 
-	///=========================
-	/// 変数宣言
-	///=========================
-
-
-
-	///=========================
-	/// リソース読み込み
-	///=========================
-	const int kWhiteTexture = Novice::LoadTexture("./NoviceResources/white1x1.png");
+	//const int kWhiteTexture = Novice::LoadTexture("./NoviceResources/white1x1.png");
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
