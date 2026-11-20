@@ -24,7 +24,7 @@ struct Player
 	Vector2 position;
 	Vector2 speed;
 	Vector2 velocity;
-	Vector2 acceleration;	
+	Vector2 acceleration;
 	Vector2 size;
 	int hp, maxHp;
 	bool isGrounded;			// 地面にいるか
@@ -121,13 +121,13 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		{ 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1 },
 		{ 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1 },
 		{ 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1 },
-		{ 1,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,1 },
+		{ 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1 },
+		{ 1,0,0,0,2,2,2,2,2,2,2,0,0,0,0,0,0,0,0,2,2,2,2,2,2,2,0,0,0,1 },
 		{ 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1 },
 		{ 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1 },
-		{ 1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1 },
+		{ 1,0,0,0,0,0,0,0,0,0,0,0,0,2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,1 },
 		{ 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1 },
-		{ 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1 },
-		{ 1,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,1 },
+		{ 1,0,0,0,2,2,2,2,2,2,2,0,0,0,0,0,0,0,0,2,2,2,2,2,2,2,0,0,0,1 },
 		{ 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1 },
 		{ 1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1 },
 		{ 1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1 },
@@ -148,6 +148,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	//const int kWhiteTexture = Novice::LoadTexture("./NoviceResources/white1x1.png");
 	const int kPlayerTextureHandle = Novice::LoadTexture("./Resources/player.png");
 	const int kMapChipTextureHandle = Novice::LoadTexture("./Resources/block.png");
+	const int kFloorTextureHandle = Novice::LoadTexture("./Resources/floor.png");
 	const int kTitleTextureHandle = Novice::LoadTexture("./Resources/title.png");
 	const int kBackGroundTextureHandle = Novice::LoadTexture("./Resources/backGround.png");
 	const int kClearTextureHandle = Novice::LoadTexture("./Resources/clear.png");
@@ -181,6 +182,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 					player.size = { 64.0f,64.0f };
 					player.jumpCount = 0;
 					player.isGrounded = true;
+					player.dropThroughTimer = 0;
 				}
 				break;
 
@@ -203,12 +205,21 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 					{
 						player.velocity.y = -17.0f;
 						player.jumpCount++;
+						player.isGrounded = false;
 					}
 				}
-				else if (player.position.y > player.size.y)
+
+				if (player.dropThroughTimer > 0)
 				{
+					player.dropThroughTimer--;
+				}
+
+				if (player.isGrounded && keys[DIK_S] && !preKeys[DIK_S])
+				{
+					player.dropThroughTimer = 12;
 					player.isGrounded = false;
 				}
+
 				player.velocity.y += player.acceleration.y;
 
 				player.position.x += player.velocity.x;
@@ -244,6 +255,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 				}
 
 				// Y軸方向の移動と当たり判定
+				float prevBottom = player.position.y + player.size.y;	// 移動前の足元Y座標
 				player.position.y += player.velocity.y;
 
 				{
@@ -263,6 +275,21 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 							player.velocity.y = 0.0f;
 							player.isGrounded = true;
 							player.jumpCount = 0;
+						}
+						else if (player.dropThroughTimer == 0 && (map[bottomTile][leftTile] == FLOOR || map[bottomTile][rightTile] == FLOOR))
+						{
+							float floorTop = static_cast<float>(bottomTile * kChipSize);	// 足場の上端Ｙ座標
+
+							// 前フレームの足元が足場の上端以下（＋少しの許容誤差）なら着地させる
+							if (prevBottom <= floorTop + player.velocity.y)
+							{
+								player.position.y = floorTop - player.size.y;
+								player.velocity.y = 0.0f;
+								player.isGrounded = true;
+								player.jumpCount = 0;
+							}
+
+
 						}
 					}
 					else if (player.velocity.y < 0.0f)
@@ -332,6 +359,17 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 								x* kChipSize,
 								y* kChipSize,
 								kMapChipTextureHandle,
+								1.0f, 1.0f,
+								0.0f,
+								WHITE
+							);
+						}
+						if (map[y][x] == FLOOR)
+						{
+							Novice::DrawSprite(
+								x* kChipSize,
+								y* kChipSize,
+								kFloorTextureHandle,
 								1.0f, 1.0f,
 								0.0f,
 								WHITE
